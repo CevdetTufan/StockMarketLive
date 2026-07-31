@@ -100,4 +100,4 @@ npm run dev
 
 ## 📄 License
 
-This project is licensed under the **Apache License 2.0**. See the [LICENSE.txt](LICENSE) file for more details.
+This project is licensed under the **Apache License 2.0**. See the [LICENSE](LICENSE.txt) file for more details.
