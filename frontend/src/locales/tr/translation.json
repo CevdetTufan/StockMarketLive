@@ -1,0 +1,21 @@
+{
+  "login": {
+    "title": "Borsa Canlı İzleme",
+    "username": "Kullanıcı Adı",
+    "password": "Şifre",
+    "submit": "Giriş Yap",
+    "error": "Geçersiz bilgiler"
+  },
+  "dashboard": {
+    "title": "Canlı Gösterge Paneli",
+    "symbol": "Sembol",
+    "price": "Fiyat",
+    "signal": "Yapay Zeka Sinyali",
+    "lastUpdate": "Son Güncelleme",
+    "signals": {
+      "0": "BEKLE",
+      "1": "AL",
+      "2": "SAT"
+    }
+  }
+}

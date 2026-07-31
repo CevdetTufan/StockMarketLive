@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/StockMarketLive.Api/StockMarketLive.Api.csproj" />
+    <Project Path="backend/StockMarketLive.Application/StockMarketLive.Application.csproj" />
+    <Project Path="backend/StockMarketLive.Domain/StockMarketLive.Domain.csproj" />
+    <Project Path="backend/StockMarketLive.Infrastructure/StockMarketLive.Infrastructure.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,17 @@
+@keyframes flashGreen {
+  0% { background-color: rgba(39, 174, 96, 0.5); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flashRed {
+  0% { background-color: rgba(231, 76, 60, 0.5); }
+  100% { background-color: transparent; }
+}
+
+.flash-up {
+  animation: flashGreen 1s ease-out;
+}
+
+.flash-down {
+  animation: flashRed 1s ease-out;
+}

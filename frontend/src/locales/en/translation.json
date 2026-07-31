@@ -1,0 +1,21 @@
+{
+  "login": {
+    "title": "Stock Market Live",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Invalid credentials"
+  },
+  "dashboard": {
+    "title": "Live Dashboard",
+    "symbol": "Symbol",
+    "price": "Price",
+    "signal": "AI Signal",
+    "lastUpdate": "Last Update",
+    "signals": {
+      "0": "HOLD",
+      "1": "BUY",
+      "2": "SELL"
+    }
+  }
+}

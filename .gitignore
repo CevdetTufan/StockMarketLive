@@ -1,0 +1,35 @@
+# .NET / Visual Studio
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+out/
+TestResults/
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.npm/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# =========================
+# KESİNLİKLE GİZLİ (SECRETS)
+# =========================
+.env
+.env.*
+*.secret
+appsettings.Development.json
+appsettings.Local.json
+*.pfx
+*.publishsettings
