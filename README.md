@@ -1,8 +1,35 @@
 # StockMarket Live
 
+> 🤖 **Note:** This project was architected and coded entirely by an AI Assistant.
+
 StockMarket Live is a modern, real-time web application designed to consume and display AI-analyzed stock market signals. 
 
 ## 🏗️ Architecture & Ecosystem
+
+```mermaid
+graph TD
+    %% Publisher
+    A["StockMarket (Private Repo)<br/>AI Analysis & Trading Engine"] -->|"Publishes: StockPriceAnalyzedEvent"| B(("RabbitMQ<br/>CloudAMQP Exchange"))
+
+    %% Message Broker
+    B -->|"Fanout Subscription"| C["StockMarketLive.Api<br/>MassTransit Consumer"]
+
+    %% Consumer & Broadcaster
+    C -->|"Broadcasts Real-Time"| D{"SignalR Hub<br/>WebSockets"}
+
+    %% Clients
+    D -->|"Push Updates"| E["React + Vite Frontend<br/>Web Dashboard"]
+
+    classDef publisher fill:#e74c3c,stroke:#c0392b,color:#fff,stroke-width:2px;
+    classDef broker fill:#f39c12,stroke:#d35400,color:#fff,stroke-width:2px;
+    classDef backend fill:#3498db,stroke:#2980b9,color:#fff,stroke-width:2px;
+    classDef frontend fill:#2ecc71,stroke:#27ae60,color:#fff,stroke-width:2px;
+
+    class A publisher;
+    class B broker;
+    class C,D backend;
+    class E frontend;
+```
 
 This project is part of a distributed, event-driven ecosystem. It operates in tandem with a separate **private repository** named `StockMarket`.
 
