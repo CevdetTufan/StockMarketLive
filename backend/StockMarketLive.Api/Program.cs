@@ -1,21 +1,27 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using StockMarketLive.Api.Endpoints;
+using StockMarketLive.Api.Extensions;
 using StockMarketLive.Api.Hubs;
 using StockMarketLive.Api.Services;
 using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Constants;
 using StockMarketLive.Infrastructure;
+using System.Text;
+
+using StockMarketLive.Application.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. CORS Konfigürasyonu ---
-// Frontend (React/Vite) uygulamamızın SignalR'a bağlanabilmesi için gereklidir.
+var corsSettings = new CorsSettings();
+builder.Configuration.GetSection(CorsSettings.SectionName).Bind(corsSettings);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(AppConstants.CorsPolicyName, policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000") // Frontend portları
+        policy.WithOrigins(corsSettings.Origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // SignalR için gereklidir
@@ -72,12 +78,11 @@ app.UseCors(AppConstants.CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Minimal API: Basit Login Endpointi (Mock) - Gerçekte DB'den doğrulanır.
-app.MapPost("/api/auth/login", () =>
-{
-    // TODO: Gerçek Login mantığı
-    return Results.Ok(new { Token = "dummy_token" });
-});
+// --- 5. Veritabanı (Data Seeding) ---
+await app.InitializeDatabaseAsync();
+
+// --- 6. Minimal API Endpoints ---
+app.MapAuthEndpoints();
 
 app.MapHub<StockHub>(AppConstants.SignalR.HubEndpoint);
 

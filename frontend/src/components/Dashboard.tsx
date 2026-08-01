@@ -6,7 +6,7 @@ import { LiveSignalsFeed } from './LiveSignalsFeed';
 
 export const Dashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const { stockEvents } = useSignalR();
   const [selectedSymbol, setSelectedSymbol] = useState<string>('AAPL');
 
@@ -80,11 +80,17 @@ export const Dashboard: React.FC = () => {
               <span className="material-symbols-outlined group-hover:scale-110 transition-transform">account_balance_wallet</span>
               <span className="font-label-sm text-[14px]">Portfolio</span>
             </a>
-            <a href="#" className="text-tertiary px-4 py-3 flex items-center gap-md hover:bg-tertiary/5 transition-all rounded-l-md active:translate-x-1 duration-150 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-tertiary/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-              <span className="material-symbols-outlined group-hover:scale-110 transition-transform">psychology</span>
-              <span className="font-label-sm text-[14px]">AI Insights</span>
+            <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-white/70 hover:bg-white/10 hover:text-white">
+              <span className="text-xl">⚙️</span>
+              <span className="font-medium text-sm">Ayarlar</span>
             </a>
+            
+            {isAdmin && (
+              <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20">
+                <span className="text-xl">🛡️</span>
+                <span className="font-medium text-sm">Kullanıcı Yönetimi</span>
+              </a>
+            )}
           </div>
         </aside>
 
