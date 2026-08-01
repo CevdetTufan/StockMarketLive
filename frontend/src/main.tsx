@@ -11,9 +11,7 @@ if (rootElement) {
     <React.StrictMode>
       <AuthProvider>
         <SignalRProvider>
-          <div className="container">
-            <App />
-          </div>
+          <App />
         </SignalRProvider>
       </AuthProvider>
     </React.StrictMode>

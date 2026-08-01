@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import * as signalR from '@microsoft/signalr';
 import { useAuth } from './AuthContext';
 
@@ -13,6 +14,7 @@ export interface StockPriceAnalyzedEvent {
 interface SignalRContextType {
   connection: signalR.HubConnection | null;
   stockEvents: Record<string, StockPriceAnalyzedEvent>;
+  signalHistory: StockPriceAnalyzedEvent[];
 }
 
 const SignalRContext = createContext<SignalRContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
   const { token } = useAuth();
   const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   const [stockEvents, setStockEvents] = useState<Record<string, StockPriceAnalyzedEvent>>({});
+  const [signalHistory, setSignalHistory] = useState<StockPriceAnalyzedEvent[]>([]);
 
   useEffect(() => {
     if (!token) {
@@ -31,8 +34,8 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    // Sabit (Constant) url kuralına uyularak ortam değişkeninden alınabilir
-    const hubUrl = 'http://localhost:5000/hubs/stock'; 
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const hubUrl = `${baseUrl}/hubs/stock`; 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, { accessTokenFactory: () => token })
       .withAutomaticReconnect()
@@ -41,10 +44,17 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
     newConnection.start().catch(err => console.error('SignalR Connection Error: ', err));
 
     newConnection.on('ReceiveStockUpdate', (data: StockPriceAnalyzedEvent) => {
+      // Update latest state per symbol
       setStockEvents(prev => ({
         ...prev,
         [data.symbol]: data
       }));
+      
+      // Update signal history log (keep last 50 events)
+      setSignalHistory(prev => {
+        const newHistory = [data, ...prev];
+        return newHistory.slice(0, 50);
+      });
     });
 
     setConnection(newConnection);
@@ -55,7 +65,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [token]);
 
   return (
-    <SignalRContext.Provider value={{ connection, stockEvents }}>
+    <SignalRContext.Provider value={{ connection, stockEvents, signalHistory }}>
       {children}
     </SignalRContext.Provider>
   );
