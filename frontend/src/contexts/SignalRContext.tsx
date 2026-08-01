@@ -34,8 +34,8 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    // Sabit (Constant) url kuralına uyularak ortam değişkeninden alınabilir
-    const hubUrl = 'http://localhost:5000/hubs/stock'; 
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const hubUrl = `${baseUrl}/hubs/stock`; 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, { accessTokenFactory: () => token })
       .withAutomaticReconnect()
