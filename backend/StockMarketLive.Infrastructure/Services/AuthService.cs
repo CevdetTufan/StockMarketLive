@@ -82,4 +82,14 @@ public class AuthService : IAuthService
         
         return Result<UserProfileDto>.Success(dto);
     }
+
+    public async Task<Result<List<UserProfileDto>>> GetUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var users = await _context.Users
+            .AsNoTracking()
+            .Select(u => new UserProfileDto(u.Id, u.Username, u.Email, u.UserRoles.Any(ur => ur.Role.Name == "Admin")))
+            .ToListAsync(cancellationToken);
+
+        return Result<List<UserProfileDto>>.Success(users);
+    }
 }
