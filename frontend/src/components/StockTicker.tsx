@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StockPriceAnalyzedEvent } from '../contexts/SignalRContext';
+import type { StockPriceAnalyzedEvent } from '../contexts/SignalRContext';
 
 interface Props {
   data: StockPriceAnalyzedEvent;
