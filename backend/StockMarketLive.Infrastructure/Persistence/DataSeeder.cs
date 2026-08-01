@@ -8,19 +8,6 @@ public static class DataSeeder
 {
     public static async Task SeedAsync(AppDbContext context, IPasswordHasher passwordHasher)
     {
-#pragma warning disable S125 // Sections of code should not be commented out
-        // Otomatik Migration Uygulama (Veritabanı yoksa oluşturur, varsa günceller)
-        //try
-        //{
-        //    await context.Database.MigrateAsync();
-        //}
-        //catch (Exception ex)
-        //{
-        //    Console.WriteLine($"Migration Error: {ex.Message}");
-        //    throw; // PostgreSQL'e hiç bağlanılamıyorsa hatayı yukarı fırlatır
-        //}
-#pragma warning restore S125
-
         // Add Admin Role
         var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
         if (adminRole == null)

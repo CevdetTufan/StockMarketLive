@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using StockMarketLive.Api.Filters;
 using StockMarketLive.Application.DTOs.Auth;
 using StockMarketLive.Application.Interfaces;
-using System;
+using System.Security.Claims;
 
 namespace StockMarketLive.Api.Endpoints;
 
@@ -13,47 +11,74 @@ public static class AuthEndpoints
     {
         var group = app.MapGroup("/api/auth");
 
+        // Public Endpoint
         group.MapPost("/login", async (IAuthService authService, LoginRequest request) =>
         {
             var result = await authService.LoginAsync(request.Username, request.Password);
-            if (!result.IsSuccess) return Results.BadRequest(new { Error = result.Error });
+            if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
             return Results.Ok(result.Value);
         });
 
-        group.MapPost("/register", [Microsoft.AspNetCore.Authorization.Authorize] async (System.Security.Claims.ClaimsPrincipal userPrincipal, IAuthService authService, RegisterRequest request) =>
+        // Authenticated Endpoint (Herkes)
+        group.MapGet("/me", [Microsoft.AspNetCore.Authorization.Authorize] async (ClaimsPrincipal user, IAuthService authService) =>
         {
-            var userIdString = userPrincipal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdString, out var userId)) return Results.Unauthorized();
-            
-            var profileResult = await authService.GetProfileAsync(userId);
-            if (!profileResult.IsSuccess || profileResult.Value?.IsAdmin != true) return Results.Forbid();
-
-            var result = await authService.RegisterAsync(request.Username, request.Email, request.Password);
-            if (!result.IsSuccess) return Results.BadRequest(new { Error = result.Error });
-            return Results.Ok(new { UserId = result.Value });
-        });
-
-        group.MapGet("/me", [Microsoft.AspNetCore.Authorization.Authorize] async (System.Security.Claims.ClaimsPrincipal user, IAuthService authService) =>
-        {
-            var userIdString = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdString, out var userId)) return Results.Unauthorized();
             
             var result = await authService.GetProfileAsync(userId);
-            if (!result.IsSuccess) return Results.NotFound(new { Error = result.Error });
+            if (!result.IsSuccess) return Results.NotFound(new { result.Error });
             return Results.Ok(result.Value);
         });
 
-        group.MapGet("/users", [Microsoft.AspNetCore.Authorization.Authorize] async (System.Security.Claims.ClaimsPrincipal user, IAuthService authService) =>
+        // Admin Endpoints Group (Filtre ile korunuyor)
+        var adminGroup = group.MapGroup("")
+            .RequireAuthorization()
+            .AddEndpointFilter<RequireAdminFilter>();
+
+        adminGroup.MapPost("/register", async (IAuthService authService, RegisterRequest request) =>
         {
-            var userIdString = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdString, out var userId)) return Results.Unauthorized();
-            
-            // Kullanıcının admin olup olmadığını doğrula (güvenlik)
-            var profileResult = await authService.GetProfileAsync(userId);
-            if (!profileResult.IsSuccess || profileResult.Value?.IsAdmin != true) return Results.Forbid();
-            
+            var result = await authService.RegisterAsync(request.Username, request.Email, request.Password);
+            if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
+            return Results.Ok(new { UserId = result.Value });
+        });
+
+        adminGroup.MapGet("/users", async (IAuthService authService) =>
+        {
             var usersResult = await authService.GetUsersAsync();
             return Results.Ok(usersResult.Value);
+        });
+
+        adminGroup.MapPost("/roles", async (IAuthService authService, CreateRoleRequest request) =>
+        {
+            var result = await authService.CreateRoleAsync(request.Name);
+            if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
+            return Results.Ok(new { RoleId = result.Value });
+        });
+
+        adminGroup.MapGet("/roles", async (IAuthService authService) =>
+        {
+            var result = await authService.GetRolesAsync();
+            return Results.Ok(result.Value);
+        });
+
+        adminGroup.MapGet("/permissions", async (IAuthService authService) =>
+        {
+            var result = await authService.GetPermissionsAsync();
+            return Results.Ok(result.Value);
+        });
+
+        adminGroup.MapPost("/users/{targetUserId:guid}/roles", async (IAuthService authService, Guid targetUserId, AssignRoleRequest request) =>
+        {
+            var result = await authService.AssignRoleToUserAsync(targetUserId, request.RoleId);
+            if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
+            return Results.Ok();
+        });
+
+        adminGroup.MapPost("/roles/{roleId:guid}/permissions", async (IAuthService authService, Guid roleId, AssignPermissionRequest request) =>
+        {
+            var result = await authService.AssignPermissionToRoleAsync(roleId, request.PermissionId);
+            if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
+            return Results.Ok();
         });
     }
 }

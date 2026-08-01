@@ -86,4 +86,4 @@ app.MapAuthEndpoints();
 
 app.MapHub<StockHub>(AppConstants.SignalR.HubEndpoint);
 
-app.Run();
+await app.RunAsync();
