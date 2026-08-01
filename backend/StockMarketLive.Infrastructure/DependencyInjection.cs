@@ -1,15 +1,37 @@
 namespace StockMarketLive.Infrastructure;
 
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using StockMarketLive.Application.Consumers;
+using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Constants;
+using StockMarketLive.Infrastructure.Persistence;
+using StockMarketLive.Infrastructure.Services;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // Add DbContext
+        var connectionString = configuration.GetConnectionString("DefaultConnection") 
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        services.AddScoped<IStockSignalRepository, StockSignalRepository>();
+
+        // Register Options
+        services.Configure<StockMarketLive.Application.Settings.JwtSettings>(
+            configuration.GetSection(StockMarketLive.Application.Settings.JwtSettings.SectionName));
+
+        // Add Auth Services
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<IJwtProvider, JwtProvider>();
+        services.AddScoped<IAuthService, AuthService>();
+
         services.AddMassTransit(x =>
         {
             x.AddConsumer<StockPriceAnalyzedConsumer>();
