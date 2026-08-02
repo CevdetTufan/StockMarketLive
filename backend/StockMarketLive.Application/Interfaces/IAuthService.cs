@@ -5,8 +5,8 @@ namespace StockMarketLive.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<Result<AuthResponse>> LoginAsync(string username, string password, CancellationToken cancellationToken = default);
-    Task<Result<Guid>> RegisterAsync(string username, string email, string password, CancellationToken cancellationToken = default);
-    Task<Result<UserProfileDto>> GetProfileAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<Result<List<UserProfileDto>>> GetUsersAsync(CancellationToken cancellationToken = default);
+    Task<Result<AuthResponse>> LoginAsync(string username, string password, CancellationToken ct = default);
+    Task<Result<Guid>> RegisterAsync(string username, string email, string password, CancellationToken ct = default);
+    Task<Result<UserProfileDto>> GetProfileAsync(Guid userId, CancellationToken ct = default);
+    Task<Result<List<UserProfileDto>>> GetUsersAsync(CancellationToken ct = default);
 }

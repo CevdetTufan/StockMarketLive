@@ -1,0 +1,16 @@
+# AI Coding Guidelines & Rules
+
+## C# / .NET Conventions
+1. **Cancellation Tokens**: Always use `ct` as the parameter name for `CancellationToken` instead of `cancellationToken`.
+2. **Simplified Member Names**: Always simplify member names to avoid `IDE0037` warnings. Use shorthand object initializers when the property name matches the variable name.
+3. **No Dead Code**: Remove commented-out code to avoid `csharpsquid:S125`.
+4. **Async Suffix**: Always use `await RunAsync()` instead of `.Run()` for asynchronous executions to avoid `csharpsquid:S6966`.
+
+## Architecture
+- Use **Service-Based Data Access**. Do NOT use the Generic Repository Pattern. Use `AppDbContext` directly in Application or Infrastructure services.
+- Follow Clean Architecture and SOLID principles. Maintain strict dependency directions (Core -> Application -> Infrastructure / Api).
+
+## i18n & Error Handling
+- Adhere to the **Zero-Hardcode** policy.
+- For business logic failures, return standardized `ErrorCodes` (e.g. `AppConstants.ErrorCodes.Auth.UserNotFound`) via `Result.Failure(code)`. 
+- DO NOT return hardcoded localized strings (e.g. "Kullanıcı bulunamadı") from the API. The frontend `react-i18next` will translate these codes.

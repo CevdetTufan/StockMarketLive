@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Entities;
 using StockMarketLive.Domain.Events;
@@ -10,7 +7,7 @@ namespace StockMarketLive.Infrastructure.Services;
 
 public class StockSignalService(AppDbContext context, ILiveStockService liveStockService) : IStockSignalService
 {
-    public async Task ProcessSignalAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken cancellationToken = default)
+    public async Task ProcessSignalAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken ct = default)
     {
         var signal = new StockSignal
         {
@@ -23,8 +20,8 @@ public class StockSignalService(AppDbContext context, ILiveStockService liveStoc
         };
         
         context.StockSignals.Add(signal);
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(ct);
 
-        await liveStockService.BroadcastStockUpdateAsync(stockEvent, cancellationToken);
+        await liveStockService.BroadcastStockUpdateAsync(stockEvent, ct);
     }
 }
