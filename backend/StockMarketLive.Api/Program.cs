@@ -1,16 +1,13 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Logs;
 using StockMarketLive.Api.Endpoints;
 using StockMarketLive.Api.Extensions;
 using StockMarketLive.Api.Hubs;
 using StockMarketLive.Api.Services;
+using StockMarketLive.Application;
 using StockMarketLive.Application.Interfaces;
+using StockMarketLive.Application.Settings;
 using StockMarketLive.Domain.Constants;
 using StockMarketLive.Infrastructure;
-using StockMarketLive.Application;
-using System.Text;
-
-using StockMarketLive.Application.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +41,30 @@ builder.Services.AddApiAuthentication(builder.Configuration);
 // --- 5. Global Exception Handler (Goal 11) ---
 builder.Services.AddExceptionHandler<StockMarketLive.Api.Middlewares.GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+// --- 6. OpenTelemetry & Grafana Cloud (Observability) ---
+builder.Services.AddApiTelemetry(builder.Configuration);
+
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+    
+    var telemetrySettings = new TelemetrySettings();
+    builder.Configuration.GetSection(TelemetrySettings.SectionName).Bind(telemetrySettings);
+
+    if (!string.IsNullOrEmpty(telemetrySettings.OtlpEndpoint))
+    {
+        logging.AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(telemetrySettings.OtlpEndpoint);
+            if (!string.IsNullOrEmpty(telemetrySettings.OtlpHeaders))
+            {
+                options.Headers = telemetrySettings.OtlpHeaders;
+            }
+        });
+    }
+});
 
 var app = builder.Build();
 
