@@ -7,6 +7,7 @@ using StockMarketLive.Api.Services;
 using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Constants;
 using StockMarketLive.Infrastructure;
+using StockMarketLive.Application;
 using System.Text;
 
 using StockMarketLive.Application.Settings;
@@ -33,47 +34,21 @@ builder.Services.AddSignalR();
 // Clean Architecture: Interface uygulama katmanında, implementasyonu API katmanında.
 builder.Services.AddSingleton<ILiveStockService, SignalRLiveStockService>();
 
-// --- 3. Altyapı (Infrastructure) Kayıtları (MassTransit / RabbitMQ) ---
+// --- 3. Application & Infrastructure Kayıtları ---
+builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // --- 4. JWT Authentication (Güvenlik Kuralı) ---
-var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key missing");
-var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+builder.Services.AddApiAuthentication(builder.Configuration);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
-        };
-
-        // SignalR için WebSockets üzerinden gelen Token'ı Header yerine QueryString'den almak gerekir
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments(AppConstants.SignalR.HubEndpoint))
-                {
-                    context.Token = accessToken;
-                }
-                return Task.CompletedTask;
-            }
-        };
-    });
-
-builder.Services.AddAuthorization();
+// --- 5. Global Exception Handler (Goal 11) ---
+builder.Services.AddExceptionHandler<StockMarketLive.Api.Middlewares.GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
+app.UseExceptionHandler();
 app.UseCors(AppConstants.CorsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();

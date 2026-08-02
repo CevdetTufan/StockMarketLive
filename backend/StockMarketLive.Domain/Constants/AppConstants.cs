@@ -18,4 +18,9 @@ public static class AppConstants
         public const string HubEndpoint = "/hubs/stock";
         public const string ReceiveEventName = "ReceiveStockUpdate";
     }
+
+    public static class Roles
+    {
+        public const string Admin = "Admin";
+    }
 }

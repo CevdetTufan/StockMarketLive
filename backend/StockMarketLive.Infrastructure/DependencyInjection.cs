@@ -21,8 +21,6 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
-        services.AddScoped<IStockSignalRepository, StockSignalRepository>();
-
         // Register Options
         services.Configure<StockMarketLive.Application.Settings.JwtSettings>(
             configuration.GetSection(StockMarketLive.Application.Settings.JwtSettings.SectionName));
@@ -31,6 +29,8 @@ public static class DependencyInjection
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtProvider, JwtProvider>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IStockSignalService, StockSignalService>();
 
         services.AddMassTransit(x =>
         {
