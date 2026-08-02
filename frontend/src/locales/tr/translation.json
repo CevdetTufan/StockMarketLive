@@ -17,5 +17,26 @@
       "1": "AL",
       "2": "SAT"
     }
+  },
+  "errors": {
+    "AUTH_INVALID_CREDENTIALS": "Geçersiz kullanıcı adı veya şifre.",
+    "AUTH_USER_ALREADY_EXISTS": "Bu kullanıcı adı veya e-posta zaten kullanımda.",
+    "AUTH_USER_NOT_FOUND": "Kullanıcı bulunamadı.",
+    "AUTH_USERNAME_EMPTY": "Kullanıcı adı boş olamaz.",
+    "AUTH_USERNAME_TOO_SHORT": "Kullanıcı adı en az 3 karakter olmalıdır.",
+    "AUTH_PASSWORD_EMPTY": "Şifre boş olamaz.",
+    "AUTH_PASSWORD_TOO_SHORT": "Şifre en az 6 karakter olmalıdır.",
+    "AUTH_EMAIL_EMPTY": "E-posta boş olamaz.",
+    "AUTH_EMAIL_INVALID": "Geçersiz e-posta formatı.",
+    "ROLE_ALREADY_EXISTS": "Bu isimde bir rol zaten mevcut.",
+    "ROLE_NOT_FOUND": "Rol bulunamadı.",
+    "PERMISSION_NOT_FOUND": "Yetki bulunamadı.",
+    "USER_ALREADY_HAS_ROLE": "Kullanıcı zaten bu role sahip.",
+    "ROLE_ALREADY_HAS_PERMISSION": "Rol zaten bu yetkiye sahip.",
+    "ROLE_NAME_EMPTY": "Rol adı boş olamaz.",
+    "ROLE_NAME_TOO_SHORT": "Rol adı en az 2 karakter olmalıdır.",
+    "GENERAL_INVALID_REQUEST": "Geçersiz istek.",
+    "GENERAL_ERROR": "Bir hata oluştu.",
+    "CONNECTION_ERROR": "Bağlantı hatası."
   }
 }

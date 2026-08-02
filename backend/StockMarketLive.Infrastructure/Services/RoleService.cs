@@ -2,13 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using StockMarketLive.Application.DTOs.Auth;
 using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Common;
+using StockMarketLive.Domain.Constants;
 using StockMarketLive.Domain.Entities;
 using StockMarketLive.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace StockMarketLive.Infrastructure.Services;
 
@@ -20,7 +16,7 @@ public class RoleService(AppDbContext context) : IRoleService
     {
         if (await _context.Roles.AnyAsync(r => r.Name == name, cancellationToken))
         {
-            return Result<Guid>.Failure("Bu isimde bir rol zaten mevcut.");
+            return Result<Guid>.Failure(AppConstants.ErrorCodes.Role.RoleAlreadyExists);
         }
 
         var role = new Role
@@ -58,14 +54,14 @@ public class RoleService(AppDbContext context) : IRoleService
     public async Task<Result<bool>> AssignRoleToUserAsync(Guid userId, Guid roleId, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users.Include(u => u.UserRoles).SingleOrDefaultAsync(u => u.Id == userId, cancellationToken);
-        if (user == null) return Result<bool>.Failure("Kullanıcı bulunamadı.");
+        if (user == null) return Result<bool>.Failure(AppConstants.ErrorCodes.Auth.UserNotFound);
 
         var role = await _context.Roles.FindAsync([roleId], cancellationToken);
-        if (role == null) return Result<bool>.Failure("Rol bulunamadı.");
+        if (role == null) return Result<bool>.Failure(AppConstants.ErrorCodes.Role.RoleNotFound);
 
         if (user.UserRoles.Any(ur => ur.RoleId == roleId))
         {
-            return Result<bool>.Failure("Kullanıcı zaten bu role sahip.");
+            return Result<bool>.Failure(AppConstants.ErrorCodes.Role.UserAlreadyHasRole);
         }
 
         user.UserRoles.Add(new UserRole { UserId = userId, RoleId = roleId });
@@ -77,14 +73,14 @@ public class RoleService(AppDbContext context) : IRoleService
     public async Task<Result<bool>> AssignPermissionToRoleAsync(Guid roleId, Guid permissionId, CancellationToken cancellationToken = default)
     {
         var role = await _context.Roles.Include(r => r.RolePermissions).SingleOrDefaultAsync(r => r.Id == roleId, cancellationToken);
-        if (role == null) return Result<bool>.Failure("Rol bulunamadı.");
+        if (role == null) return Result<bool>.Failure(AppConstants.ErrorCodes.Role.RoleNotFound);
 
         var permission = await _context.Permissions.FindAsync([permissionId], cancellationToken);
-        if (permission == null) return Result<bool>.Failure("Yetki bulunamadı.");
+        if (permission == null) return Result<bool>.Failure(AppConstants.ErrorCodes.Role.PermissionNotFound);
 
         if (role.RolePermissions.Any(rp => rp.PermissionId == permissionId))
         {
-            return Result<bool>.Failure("Rol zaten bu yetkiye sahip.");
+            return Result<bool>.Failure(AppConstants.ErrorCodes.Role.RoleAlreadyHasPermission);
         }
 
         role.RolePermissions.Add(new RolePermission { RoleId = roleId, PermissionId = permissionId });

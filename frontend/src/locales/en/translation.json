@@ -17,5 +17,26 @@
       "1": "BUY",
       "2": "SELL"
     }
+  },
+  "errors": {
+    "AUTH_INVALID_CREDENTIALS": "Invalid username or password.",
+    "AUTH_USER_ALREADY_EXISTS": "This username or email is already in use.",
+    "AUTH_USER_NOT_FOUND": "User not found.",
+    "AUTH_USERNAME_EMPTY": "Username cannot be empty.",
+    "AUTH_USERNAME_TOO_SHORT": "Username must be at least 3 characters.",
+    "AUTH_PASSWORD_EMPTY": "Password cannot be empty.",
+    "AUTH_PASSWORD_TOO_SHORT": "Password must be at least 6 characters.",
+    "AUTH_EMAIL_EMPTY": "Email cannot be empty.",
+    "AUTH_EMAIL_INVALID": "Invalid email format.",
+    "ROLE_ALREADY_EXISTS": "A role with this name already exists.",
+    "ROLE_NOT_FOUND": "Role not found.",
+    "PERMISSION_NOT_FOUND": "Permission not found.",
+    "USER_ALREADY_HAS_ROLE": "User already has this role.",
+    "ROLE_ALREADY_HAS_PERMISSION": "Role already has this permission.",
+    "ROLE_NAME_EMPTY": "Role name cannot be empty.",
+    "ROLE_NAME_TOO_SHORT": "Role name must be at least 2 characters.",
+    "GENERAL_INVALID_REQUEST": "Invalid request.",
+    "GENERAL_ERROR": "An error occurred.",
+    "CONNECTION_ERROR": "Connection error."
   }
 }

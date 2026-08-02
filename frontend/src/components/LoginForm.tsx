@@ -8,10 +8,11 @@ export const LoginForm: React.FC = () => {
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     try {
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -25,10 +26,12 @@ export const LoginForm: React.FC = () => {
         const data = await response.json();
         login(data.token);
       } else {
-        setError(true);
+        const data = await response.json();
+        const errorCode = data.error || 'AUTH_INVALID_CREDENTIALS';
+        setError(t(`errors.${errorCode}`, { defaultValue: t('login.error') }));
       }
     } catch {
-      setError(true);
+      setError(t('errors.CONNECTION_ERROR', { defaultValue: t('login.error') }));
     }
   };
 
@@ -91,7 +94,7 @@ export const LoginForm: React.FC = () => {
           {error && (
             <div className="bg-error-container/20 border border-error/50 rounded-lg p-3 flex items-start gap-2">
               <span className="material-symbols-outlined text-error text-[18px]">error</span>
-              <p className="text-error text-sm font-data-md">{t('login.error') || 'Invalid credentials'}</p>
+              <p className="text-error text-sm font-data-md">{error}</p>
             </div>
           )}
           

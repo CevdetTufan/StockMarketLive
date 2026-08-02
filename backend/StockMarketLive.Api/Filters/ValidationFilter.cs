@@ -20,7 +20,7 @@ public class ValidationFilter<T> : IEndpointFilter where T : class
 
         if (validatable is null)
         {
-            return Results.BadRequest("Geçersiz istek.");
+            return Results.BadRequest(new { Error = "GENERAL_INVALID_REQUEST" });
         }
 
         var validationResult = await _validator.ValidateAsync(validatable);
@@ -31,7 +31,7 @@ public class ValidationFilter<T> : IEndpointFilter where T : class
                 .GroupBy(x => x.PropertyName)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Select(x => x.ErrorMessage).ToArray()
+                    g => g.Select(x => !string.IsNullOrEmpty(x.ErrorCode) ? x.ErrorCode : x.ErrorMessage).ToArray()
                 );
 
             return Results.ValidationProblem(errors);
