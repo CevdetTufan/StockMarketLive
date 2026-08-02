@@ -9,7 +9,7 @@ namespace StockMarketLive.Api.Middlewares;
 
 public class GlobalExceptionHandler : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken ct)
     {
         var problemDetails = new ProblemDetails
         {
@@ -20,10 +20,10 @@ public class GlobalExceptionHandler : IExceptionHandler
         };
 
         // Geliştirme aşamasında hata detaylarını göstermek isterseniz buraya eklenebilir.
-        // problemDetails.Extensions["exceptionMessage"] = exception.Message;
+        // problemDetails.Extensions["exceptionMessage"] = exception.Message
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        await httpContext.Response.WriteAsJsonAsync(problemDetails, ct);
 
         return true;
     }

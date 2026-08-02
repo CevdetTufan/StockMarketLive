@@ -4,5 +4,5 @@ namespace StockMarketLive.Application.Interfaces;
 
 public interface IStockSignalService
 {
-    Task ProcessSignalAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken cancellationToken = default);
+    Task ProcessSignalAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken ct = default);
 }
