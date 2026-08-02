@@ -16,8 +16,8 @@ public static class AuthEndpoints
         {
             var result = await authService.LoginAsync(request.Username, request.Password);
             if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
-            return Results.Ok(result.Value);
-        });
+            return Results.Ok(new { Token = result.Value });
+        }).AddEndpointFilter<ValidationFilter<LoginRequest>>();
 
         // Authenticated Endpoint (Herkes)
         group.MapGet("/me", [Microsoft.AspNetCore.Authorization.Authorize] async (ClaimsPrincipal user, IAuthService authService) =>
@@ -40,7 +40,7 @@ public static class AuthEndpoints
             var result = await authService.RegisterAsync(request.Username, request.Email, request.Password);
             if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
             return Results.Ok(new { UserId = result.Value });
-        });
+        }).AddEndpointFilter<ValidationFilter<RegisterRequest>>();
 
         adminGroup.MapGet("/users", async (IAuthService authService) =>
         {
@@ -48,35 +48,35 @@ public static class AuthEndpoints
             return Results.Ok(usersResult.Value);
         });
 
-        adminGroup.MapPost("/roles", async (IAuthService authService, CreateRoleRequest request) =>
+        adminGroup.MapPost("/roles", async (IRoleService roleService, CreateRoleRequest request) =>
         {
-            var result = await authService.CreateRoleAsync(request.Name);
+            var result = await roleService.CreateRoleAsync(request.Name);
             if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
             return Results.Ok(new { RoleId = result.Value });
-        });
+        }).AddEndpointFilter<ValidationFilter<CreateRoleRequest>>();
 
-        adminGroup.MapGet("/roles", async (IAuthService authService) =>
+        adminGroup.MapGet("/roles", async (IRoleService roleService) =>
         {
-            var result = await authService.GetRolesAsync();
+            var result = await roleService.GetRolesAsync();
             return Results.Ok(result.Value);
         });
 
-        adminGroup.MapGet("/permissions", async (IAuthService authService) =>
+        adminGroup.MapGet("/permissions", async (IRoleService roleService) =>
         {
-            var result = await authService.GetPermissionsAsync();
+            var result = await roleService.GetPermissionsAsync();
             return Results.Ok(result.Value);
         });
 
-        adminGroup.MapPost("/users/{targetUserId:guid}/roles", async (IAuthService authService, Guid targetUserId, AssignRoleRequest request) =>
+        adminGroup.MapPost("/users/{targetUserId:guid}/roles", async (IRoleService roleService, Guid targetUserId, AssignRoleRequest request) =>
         {
-            var result = await authService.AssignRoleToUserAsync(targetUserId, request.RoleId);
+            var result = await roleService.AssignRoleToUserAsync(targetUserId, request.RoleId);
             if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
             return Results.Ok();
         });
 
-        adminGroup.MapPost("/roles/{roleId:guid}/permissions", async (IAuthService authService, Guid roleId, AssignPermissionRequest request) =>
+        adminGroup.MapPost("/roles/{roleId:guid}/permissions", async (IRoleService roleService, Guid roleId, AssignPermissionRequest request) =>
         {
-            var result = await authService.AssignPermissionToRoleAsync(roleId, request.PermissionId);
+            var result = await roleService.AssignPermissionToRoleAsync(roleId, request.PermissionId);
             if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
             return Results.Ok();
         });

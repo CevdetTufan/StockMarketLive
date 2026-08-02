@@ -4,6 +4,7 @@ using StockMarketLive.Application.Interfaces;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using StockMarketLive.Domain.Constants;
 
 namespace StockMarketLive.Api.Filters;
 
@@ -21,7 +22,7 @@ public class RequireAdminFilter : IEndpointFilter
         }
         
         var profileResult = await authService.GetProfileAsync(currentUserId);
-        if (!profileResult.IsSuccess || profileResult.Value?.IsAdmin != true) 
+        if (!profileResult.IsSuccess || !profileResult.Value!.Roles.Any(r => r.Name == AppConstants.Roles.Admin)) 
         {
             return Results.Forbid();
         }

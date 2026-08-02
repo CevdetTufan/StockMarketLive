@@ -74,6 +74,14 @@ The relational database architecture is defined via EF Core Code-First approach 
 *   `UserRoles`: Many-to-many relationship mapping users to their respective roles.
 *   `RolePermissions`: Many-to-many relationship mapping roles to specific system permissions.
 
+## 🏛️ Data Access Strategy (Repository-Free)
+
+This project intentionally avoids the traditional **Generic Repository Pattern**. Instead, it uses a **Service-Based Data Access** approach where Application and Infrastructure services interact directly with the Entity Framework Core `AppDbContext`.
+
+**Why no Repository?**
+1. **YAGNI & KISS:** EF Core's `DbContext` is already a Unit of Work, and `DbSet<T>` is already a Repository. Wrapping them in another generic repository layer adds unnecessary complexity and bloat without providing real value (Violates You Aren't Gonna Need It & Keep It Simple, Stupid principles).
+2. **Performance & Query Control:** By using `AppDbContext` directly in our services, we maintain full access to `IQueryable<T>`, allowing us to leverage EF Core's powerful features (like `Include`, `Select`, `AsNoTracking`, and projections) directly where the business logic demands it, avoiding the "leaky abstraction" problem common in generic repositories.
+
 ## 🛡️ Zero-Hardcode & Security Policies
 
 This project strictly adheres to enterprise-level security and quality standards:

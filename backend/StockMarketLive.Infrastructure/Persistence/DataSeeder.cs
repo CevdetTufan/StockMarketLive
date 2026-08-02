@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Entities;
+using StockMarketLive.Domain.Constants;
 
 namespace StockMarketLive.Infrastructure.Persistence;
 
@@ -8,11 +9,10 @@ public static class DataSeeder
 {
     public static async Task SeedAsync(AppDbContext context, IPasswordHasher passwordHasher)
     {
-        // Add Admin Role
-        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+        var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == AppConstants.Roles.Admin);
         if (adminRole == null)
         {
-            adminRole = new Role { Id = Guid.NewGuid(), Name = "Admin" };
+            adminRole = new Role { Id = Guid.NewGuid(), Name = AppConstants.Roles.Admin };
             context.Roles.Add(adminRole);
         }
 
