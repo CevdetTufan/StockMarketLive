@@ -20,12 +20,12 @@ public class AuthService(AppDbContext context, IPasswordHasher passwordHasher, I
         
         if (user is null || !user.IsActive)
         {
-            return Result<AuthResponse>.Failure("Geçersiz kullanıcı adı veya şifre.");
+            return Result<AuthResponse>.Failure(AppConstants.ErrorCodes.Auth.InvalidCredentials);
         }
 
         if (!_passwordHasher.VerifyPassword(password, user.PasswordHash))
         {
-            return Result<AuthResponse>.Failure("Geçersiz kullanıcı adı veya şifre.");
+            return Result<AuthResponse>.Failure(AppConstants.ErrorCodes.Auth.InvalidCredentials);
         }
 
         var token = _jwtProvider.Generate(user);
@@ -37,7 +37,7 @@ public class AuthService(AppDbContext context, IPasswordHasher passwordHasher, I
     {
         if (await _context.Users.AnyAsync(u => u.Username == username || u.Email == email, cancellationToken))
         {
-            return Result<Guid>.Failure("Bu kullanıcı adı veya e-posta zaten kullanımda.");
+            return Result<Guid>.Failure(AppConstants.ErrorCodes.Auth.UserAlreadyExists);
         }
 
         var passwordHash = _passwordHasher.HashPassword(password);
@@ -67,7 +67,7 @@ public class AuthService(AppDbContext context, IPasswordHasher passwordHasher, I
 
         if (user is null)
         {
-            return Result<UserProfileDto>.Failure("Kullanıcı bulunamadı.");
+            return Result<UserProfileDto>.Failure(AppConstants.ErrorCodes.Auth.UserNotFound);
         }
 
         var isAdmin = user.UserRoles.Any(ur => ur.Role.Name == AppConstants.Roles.Admin);

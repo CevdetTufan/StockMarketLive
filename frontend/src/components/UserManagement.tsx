@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 
 interface RoleDto {
@@ -21,6 +22,7 @@ interface UserDto {
 }
 
 export const UserManagement: React.FC = () => {
+  const { t } = useTranslation();
   const { token } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'permissions'>('users');
@@ -50,6 +52,17 @@ export const UserManagement: React.FC = () => {
   const [selectedRoleIdToAssign, setSelectedRoleIdToAssign] = useState('');
   const [selectedPermissionIdToAssign, setSelectedPermissionIdToAssign] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const extractErrorCode = (errData: any): string => {
+    if (errData.error) return errData.error;
+    if (errData.errors) {
+      const firstKey = Object.keys(errData.errors)[0];
+      if (firstKey && errData.errors[firstKey].length > 0) {
+        return errData.errors[firstKey][0];
+      }
+    }
+    return 'GENERAL_ERROR';
+  };
 
   const fetchUsers = async () => {
     try {
@@ -112,10 +125,10 @@ export const UserManagement: React.FC = () => {
         await fetchUsers();
       } else {
         const errData = await res.json();
-        setError(errData.error || 'Kullanıcı eklenemedi.');
+        setError(t(`errors.${extractErrorCode(errData)}`, { defaultValue: t('errors.GENERAL_ERROR') }));
       }
     } catch {
-      setError('Bağlantı hatası.');
+      setError(t('errors.CONNECTION_ERROR'));
     } finally {
       setSubmitting(false);
     }
@@ -137,10 +150,10 @@ export const UserManagement: React.FC = () => {
         await fetchRoles();
       } else {
         const errData = await res.json();
-        setError(errData.error || 'Rol eklenemedi.');
+        setError(t(`errors.${extractErrorCode(errData)}`, { defaultValue: t('errors.GENERAL_ERROR') }));
       }
     } catch {
-      setError('Bağlantı hatası.');
+      setError(t('errors.CONNECTION_ERROR'));
     } finally {
       setSubmitting(false);
     }
@@ -163,10 +176,10 @@ export const UserManagement: React.FC = () => {
         await fetchUsers(); // refresh roles of user
       } else {
         const errData = await res.json();
-        setError(errData.error || 'Rol atanamadı.');
+        setError(t(`errors.${extractErrorCode(errData)}`, { defaultValue: t('errors.GENERAL_ERROR') }));
       }
     } catch {
-      setError('Bağlantı hatası.');
+      setError(t('errors.CONNECTION_ERROR'));
     } finally {
       setSubmitting(false);
     }
@@ -189,10 +202,10 @@ export const UserManagement: React.FC = () => {
         // Permission list in roles isn't currently tracked in UI state, but API call succeeded.
       } else {
         const errData = await res.json();
-        setError(errData.error || 'Yetki atanamadı.');
+        setError(t(`errors.${extractErrorCode(errData)}`, { defaultValue: t('errors.GENERAL_ERROR') }));
       }
     } catch {
-      setError('Bağlantı hatası.');
+      setError(t('errors.CONNECTION_ERROR'));
     } finally {
       setSubmitting(false);
     }
