@@ -4,31 +4,21 @@ import { useSignalR } from '../contexts/SignalRContext';
 export const LiveSignalsFeed: React.FC = () => {
   const { signalHistory } = useSignalR();
 
-  const getSignalBadge = (signal: number) => {
-    switch (signal) {
-      case 1:
+  const getSignalBadge = (recommendation: string) => {
+    switch (recommendation.toLowerCase()) {
+      case 'buy':
         return <div className="bullish-bg bullish-text font-label-sm text-[10px] px-2 py-0.5 rounded border border-primary/20">BUY</div>;
-      case -1:
+      case 'sell':
         return <div className="bearish-bg bearish-text font-label-sm text-[10px] px-2 py-0.5 rounded border border-error/20">SELL</div>;
       default:
         return <div className="bg-white/10 text-on-surface-variant font-label-sm text-[10px] px-2 py-0.5 rounded">HOLD</div>;
     }
   };
 
-  const getSignalRowStyle = (signal: number) => {
-    if (signal === 1) return 'border-white/5 hover:border-primary/30';
-    if (signal === -1) return 'border-white/5 hover:border-error/30';
+  const getSignalRowStyle = (recommendation: string) => {
+    if (recommendation.toLowerCase() === 'buy') return 'border-white/5 hover:border-primary/30';
+    if (recommendation.toLowerCase() === 'sell') return 'border-white/5 hover:border-error/30';
     return 'border-white/5 opacity-60 grayscale hover:grayscale-0';
-  };
-
-  // Generate a random confidence score for visual effect if aiReason isn't numeric
-  const getConfidenceScore = (timestamp: string) => {
-    // Just a deterministic pseudo-random number based on timestamp string length/chars for UI demo
-    let hash = 0;
-    for (let i = 0; i < timestamp.length; i++) {
-      hash = timestamp.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return Math.abs(hash % 40) + 60; // Returns 60-99
   };
 
   return (
@@ -54,25 +44,25 @@ export const LiveSignalsFeed: React.FC = () => {
           </div>
         ) : (
           signalHistory.map((event, idx) => (
-            <div key={`${event.symbol}-${event.timestamp}-${idx}`} className={`bg-surface-container/50 border p-3 rounded-lg transition-all cursor-pointer group ${getSignalRowStyle(event.signal)}`}>
+            <div key={`${event.analysisId}-${idx}`} className={`bg-surface-container/50 border p-3 rounded-lg transition-all cursor-pointer group ${getSignalRowStyle(event.recommendation)}`}>
               <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
                   <span className="font-data-lg text-on-surface text-[16px]">{event.symbol}</span>
                   <span className="font-data-md text-on-surface-variant text-[11px]">
-                    {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second:'2-digit' })}
+                    {new Date(event.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second:'2-digit' })}
                   </span>
                 </div>
-                {getSignalBadge(event.signal)}
+                {getSignalBadge(event.recommendation)}
               </div>
               <div className="flex justify-between items-end">
                 <span className="font-data-md text-[14px]">
-                  ${event.price.toFixed(2)}
+                  Score: {event.score.toFixed(2)}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="font-label-sm text-tertiary text-[10px]">AI CONFIDENCE</span>
+                  <span className="font-label-sm text-tertiary text-[10px]">AI SCORE</span>
                   <div className="relative w-6 h-6 rounded-full flex items-center justify-center bg-tertiary/10 border border-tertiary/30">
                     <span className="font-data-md text-[9px] text-tertiary font-bold">
-                      {event.aiReason ? '!' : getConfidenceScore(event.timestamp)}
+                      {Math.round(event.score)}
                     </span>
                   </div>
                 </div>

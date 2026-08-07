@@ -3,11 +3,9 @@ using StockMarketLive.Domain.Entities;
 
 namespace StockMarketLive.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
-    public DbSet<User> Users => Set<User>();
+	public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<Permission> Permissions => Set<Permission>();
@@ -78,8 +76,9 @@ public class AppDbContext : DbContext
         {
             b.HasKey(s => s.Id);
             b.Property(s => s.Symbol).IsRequired().HasMaxLength(20);
+            b.Property(s => s.Recommendation).IsRequired().HasMaxLength(50);
             b.HasIndex(s => s.Symbol); // Optimize queries by symbol
-            b.HasIndex(s => s.Timestamp); // Optimize time-series queries
+            b.HasIndex(s => s.PublishedAt); // Optimize time-series queries
         });
     }
 }

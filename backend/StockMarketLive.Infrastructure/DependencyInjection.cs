@@ -34,31 +34,29 @@ public static class DependencyInjection
 
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<StockPriceAnalyzedConsumer>();
+            x.AddConsumer<OrderCreatedEventConsumer>();
+            x.AddConsumer<AnalysisInfoPublishedEventConsumer>();
+            x.AddConsumer<StockPriceUpdatedEventConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                // Güvenlik Kuralı: Şifreler ve URL'ler koda yazılmaz, IConfiguration üzerinden (.env veya user-secrets) okunur.
-                var rabbitMqUrl = configuration.GetConnectionString("RabbitMq");
-                
-                if (string.IsNullOrEmpty(rabbitMqUrl))
+                var host = configuration["RABBITMQ_HOST"];
+                var user = configuration["RABBITMQ_USERNAME"];
+                var pass = configuration["RABBITMQ_PASSWORD"];
+
+                if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
                 {
-                    throw new InvalidOperationException("RabbitMQ ConnectionString is missing in configuration or secrets.");
+                    throw new InvalidOperationException("RabbitMQ configuration (RABBITMQ_HOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD) is missing.");
                 }
 
-                cfg.Host(new Uri(rabbitMqUrl));
-
-                // Profesyonel Exchange (Pub/Sub) Stratejisi
-                cfg.ReceiveEndpoint(AppConstants.RabbitMq.QueueName, e =>
+                cfg.Host(host, "/", h =>
                 {
-                    e.ConfigureConsumer<StockPriceAnalyzedConsumer>(context);
-                    
-                    // Publisher (Mevcut proje) bu exchange'e atacak, biz buradan dinleyeceğiz.
-                    e.Bind(AppConstants.RabbitMq.ExchangeName, x =>
-                    {
-                        x.ExchangeType = "fanout";
-                    });
+                    h.Username(user);
+                    h.Password(pass);
                 });
+
+                // ConfigureEndpoints will automatically create queues and subscribe to exchanges based on consumer names
+                cfg.ConfigureEndpoints(context);
             });
         });
 

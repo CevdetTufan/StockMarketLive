@@ -163,7 +163,7 @@ export const Dashboard: React.FC = () => {
                         <h2 className="font-headline-md text-on-surface m-0 leading-none">{selectedStockData?.symbol || 'WAITING'}</h2>
                       </div>
                       <div className="h-4 w-px bg-white/20"></div>
-                      <div className="font-data-lg text-on-surface">${selectedStockData?.price?.toFixed(2) || '0.00'}</div>
+                      <div className="font-data-lg text-on-surface">Score: {selectedStockData?.score?.toFixed(2) || '0.00'}</div>
                     </div>
                     <div className="flex gap-2">
                       <button className="bg-surface-container-highest hover:bg-surface-bright text-on-surface font-label-sm px-3 py-1 rounded transition-colors text-[11px]">1H</button>
@@ -175,7 +175,7 @@ export const Dashboard: React.FC = () => {
                   {/* Chart Canvas (CSS Placeholder based on user HTML) */}
                   <div className="flex-1 relative p-4 flex flex-col justify-center items-center" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '40px 40px', backgroundPosition: 'center center' }}>
                      {!selectedStockData ? (
-                        <p className="text-on-surface-variant/50">Canlı fiyat bekleniyor...</p>
+                        <p className="text-on-surface-variant/50">Canlı analiz bekleniyor...</p>
                      ) : (
                         <>
                           {/* Fake Chart Lines for aesthetic from HTML */}
@@ -184,7 +184,7 @@ export const Dashboard: React.FC = () => {
                             <circle className="animate-pulse" cx="650" cy="50" fill="#ccbdff" r="4"></circle>
                           </svg>
                           <div className="font-display-lg text-primary text-6xl shadow-black drop-shadow-2xl opacity-50 absolute">
-                            ${selectedStockData.price.toFixed(2)}
+                            {selectedStockData.score.toFixed(2)}
                           </div>
                         </>
                      )}
