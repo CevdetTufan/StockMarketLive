@@ -4,14 +4,18 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using StockMarket.Shared.Contracts.Events;
 
-public sealed class OrderCreatedEventConsumer(ILogger<OrderCreatedEventConsumer> logger) : IConsumer<OrderCreatedEvent>
+using StockMarketLive.Application.Interfaces;
+
+public sealed class OrderCreatedEventConsumer(
+    ILogger<OrderCreatedEventConsumer> logger,
+    ILiveStockService liveStockService) : IConsumer<OrderCreatedEvent>
 {
-    public Task Consume(ConsumeContext<OrderCreatedEvent> context)
+    public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
     {
         if (context.Message is null)
         {
             logger.LogWarning("Received null OrderCreatedEvent.");
-            return Task.CompletedTask;
+            return;
         }
 
         var message = context.Message;
@@ -28,6 +32,6 @@ public sealed class OrderCreatedEventConsumer(ILogger<OrderCreatedEventConsumer>
                 message.CreatedAt);
         }
 
-        return Task.CompletedTask;
+        await liveStockService.BroadcastOrderCreatedAsync(message, context.CancellationToken);
     }
 }

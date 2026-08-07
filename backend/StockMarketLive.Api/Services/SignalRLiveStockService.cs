@@ -20,4 +20,20 @@ public sealed class SignalRLiveStockService(IHubContext<StockHub> hubContext) : 
             stockEvent, 
             cancellationToken: ct);
     }
+
+    public async Task BroadcastOrderCreatedAsync(OrderCreatedEvent orderEvent, CancellationToken ct)
+    {
+        await hubContext.Clients.All.SendAsync(
+            AppConstants.SignalR.ReceiveOrderCreated, 
+            orderEvent, 
+            cancellationToken: ct);
+    }
+
+    public async Task BroadcastStockPriceUpdatedAsync(StockPriceUpdatedEvent priceEvent, CancellationToken ct)
+    {
+        await hubContext.Clients.All.SendAsync(
+            AppConstants.SignalR.ReceiveStockPriceUpdated, 
+            priceEvent, 
+            cancellationToken: ct);
+    }
 }

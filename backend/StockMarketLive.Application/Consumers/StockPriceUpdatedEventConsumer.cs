@@ -4,14 +4,18 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using StockMarket.Shared.Contracts.Events;
 
-public sealed class StockPriceUpdatedEventConsumer(ILogger<StockPriceUpdatedEventConsumer> logger) : IConsumer<StockPriceUpdatedEvent>
+using StockMarketLive.Application.Interfaces;
+
+public sealed class StockPriceUpdatedEventConsumer(
+    ILogger<StockPriceUpdatedEventConsumer> logger,
+    ILiveStockService liveStockService) : IConsumer<StockPriceUpdatedEvent>
 {
-    public Task Consume(ConsumeContext<StockPriceUpdatedEvent> context)
+    public async Task Consume(ConsumeContext<StockPriceUpdatedEvent> context)
     {
         if (context.Message is null)
         {
             logger.LogWarning("Received null StockPriceUpdatedEvent.");
-            return Task.CompletedTask;
+            return;
         }
 
         var message = context.Message;
@@ -26,6 +30,6 @@ public sealed class StockPriceUpdatedEventConsumer(ILogger<StockPriceUpdatedEven
                 message.UpdatedAt);
         }
 
-        return Task.CompletedTask;
+        await liveStockService.BroadcastStockPriceUpdatedAsync(message, context.CancellationToken);
     }
 }

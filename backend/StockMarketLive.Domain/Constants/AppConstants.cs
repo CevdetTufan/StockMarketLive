@@ -16,7 +16,9 @@ public static class AppConstants
     public static class SignalR
     {
         public const string HubEndpoint = "/hubs/stock";
-        public const string ReceiveEventName = "ReceiveStockUpdate";
+        public const string ReceiveEventName = "ReceiveStockUpdate"; // Retained for backwards compat (Analysis Info)
+        public const string ReceiveOrderCreated = "ReceiveOrderCreated";
+        public const string ReceiveStockPriceUpdated = "ReceiveStockPriceUpdated";
     }
 
     public static class Roles

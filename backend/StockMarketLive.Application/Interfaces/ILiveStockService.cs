@@ -10,4 +10,6 @@ using StockMarket.Shared.Contracts.Events;
 public interface ILiveStockService
 {
     Task BroadcastStockUpdateAsync(AnalysisInfoPublishedEvent stockEvent, CancellationToken ct);
+    Task BroadcastOrderCreatedAsync(OrderCreatedEvent orderEvent, CancellationToken ct);
+    Task BroadcastStockPriceUpdatedAsync(StockPriceUpdatedEvent priceEvent, CancellationToken ct);
 }

@@ -8,7 +8,7 @@ import { UserManagement } from './UserManagement';
 export const Dashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { logout, isAdmin } = useAuth();
-  const { stockEvents } = useSignalR();
+  const { stockEvents, livePrices } = useSignalR();
   const [selectedSymbol, setSelectedSymbol] = useState<string>('AAPL');
   const [activeTab, setActiveTab] = useState<'terminal' | 'users'>('terminal');
 
@@ -21,6 +21,8 @@ export const Dashboard: React.FC = () => {
   
   // Bulunan en son stock event bilgisini almak için
   const selectedStockData = stockEvents[selectedSymbol] || Object.values(stockEvents)[0] || null;
+  const activeSymbol = selectedStockData?.symbol || selectedSymbol;
+  const currentPriceData = livePrices[activeSymbol];
 
   return (
     <div className="bg-background text-on-surface font-body-base antialiased overflow-hidden selection:bg-primary/30 selection:text-primary h-screen w-full flex flex-col">
@@ -160,7 +162,10 @@ export const Dashboard: React.FC = () => {
                   <div className="p-md border-b border-white/5 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-4">
                       <div className="flex items-baseline gap-2">
-                        <h2 className="font-headline-md text-on-surface m-0 leading-none">{selectedStockData?.symbol || 'WAITING'}</h2>
+                        <h2 className="font-headline-md text-on-surface m-0 leading-none">{activeSymbol}</h2>
+                        <span className="font-data-xl text-primary font-bold text-2xl ml-2">
+                          {currentPriceData ? `$${currentPriceData.currentPrice.toFixed(2)}` : 'WAITING...'}
+                        </span>
                       </div>
                       <div className="h-4 w-px bg-white/20"></div>
                       <div className="font-data-lg text-on-surface">Score: {selectedStockData?.score?.toFixed(2) || '0.00'}</div>

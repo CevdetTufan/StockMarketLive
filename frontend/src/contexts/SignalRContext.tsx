@@ -11,10 +11,28 @@ export interface AnalysisInfoPublishedEvent {
   publishedAt: string;
 }
 
+export interface OrderCreatedEvent {
+  orderId: string;
+  symbol: string;
+  price: number;
+  quantity: number;
+  side: string;
+  createdAt: string;
+}
+
+export interface StockPriceUpdatedEvent {
+  symbol: string;
+  currentPrice: number;
+  changeRate: number;
+  updatedAt: string;
+}
+
 interface SignalRContextType {
   connection: signalR.HubConnection | null;
   stockEvents: Record<string, AnalysisInfoPublishedEvent>;
   signalHistory: AnalysisInfoPublishedEvent[];
+  livePrices: Record<string, StockPriceUpdatedEvent>;
+  recentOrders: OrderCreatedEvent[];
 }
 
 const SignalRContext = createContext<SignalRContextType | undefined>(undefined);
@@ -24,6 +42,8 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   const [stockEvents, setStockEvents] = useState<Record<string, AnalysisInfoPublishedEvent>>({});
   const [signalHistory, setSignalHistory] = useState<AnalysisInfoPublishedEvent[]>([]);
+  const [livePrices, setLivePrices] = useState<Record<string, StockPriceUpdatedEvent>>({});
+  const [recentOrders, setRecentOrders] = useState<OrderCreatedEvent[]>([]);
 
   useEffect(() => {
     if (!token) {
@@ -57,6 +77,20 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     });
 
+    newConnection.on('ReceiveStockPriceUpdated', (data: StockPriceUpdatedEvent) => {
+      setLivePrices(prev => ({
+        ...prev,
+        [data.symbol]: data
+      }));
+    });
+
+    newConnection.on('ReceiveOrderCreated', (data: OrderCreatedEvent) => {
+      setRecentOrders(prev => {
+        const newOrders = [data, ...prev];
+        return newOrders.slice(0, 20); // Keep last 20 orders
+      });
+    });
+
     setConnection(newConnection);
 
     return () => {
@@ -65,7 +99,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [token]);
 
   return (
-    <SignalRContext.Provider value={{ connection, stockEvents, signalHistory }}>
+    <SignalRContext.Provider value={{ connection, stockEvents, signalHistory, livePrices, recentOrders }}>
       {children}
     </SignalRContext.Provider>
   );
