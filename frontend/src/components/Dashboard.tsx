@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useSignalR } from '../contexts/SignalRContext';
 import { LiveSignalsFeed } from './LiveSignalsFeed';
+import { LiveOrdersFeed } from './LiveOrdersFeed';
 import { UserManagement } from './UserManagement';
 
 export const Dashboard: React.FC = () => {
@@ -196,8 +197,11 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Live AI Signals Feed */}
-                <LiveSignalsFeed />
+                {/* Right Side Feeds (Signals & Orders) */}
+                <div className="flex-1 flex flex-col gap-gutter min-h-[400px] lg:min-h-0 overflow-hidden">
+                  <LiveSignalsFeed />
+                  <LiveOrdersFeed />
+                </div>
               </div>
             </>
           ) : (
