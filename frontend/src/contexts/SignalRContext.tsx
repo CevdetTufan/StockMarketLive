@@ -64,6 +64,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
     newConnection.start().catch(err => console.error('SignalR Connection Error: ', err));
 
     newConnection.on('ReceiveStockUpdate', (data: AnalysisInfoPublishedEvent) => {
+      console.log('[SignalR] ReceiveStockUpdate:', data);
       // Update latest state per symbol
       setStockEvents(prev => ({
         ...prev,
@@ -78,6 +79,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     newConnection.on('ReceiveStockPriceUpdated', (data: StockPriceUpdatedEvent) => {
+      console.log('[SignalR] ReceiveStockPriceUpdated:', data);
       setLivePrices(prev => ({
         ...prev,
         [data.symbol]: data
@@ -85,6 +87,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
 
     newConnection.on('ReceiveOrderCreated', (data: OrderCreatedEvent) => {
+      console.log('[SignalR] ReceiveOrderCreated:', data);
       setRecentOrders(prev => {
         const newOrders = [data, ...prev];
         return newOrders.slice(0, 20); // Keep last 20 orders
