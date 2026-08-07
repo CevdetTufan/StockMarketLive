@@ -40,20 +40,29 @@ public static class DependencyInjection
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                var host = configuration["RABBITMQ_HOST"];
-                var user = configuration["RABBITMQ_USERNAME"];
-                var pass = configuration["RABBITMQ_PASSWORD"];
-
-                if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+                var url = configuration["RABBITMQ_URL"];
+                if (!string.IsNullOrEmpty(url))
                 {
-                    throw new InvalidOperationException("RabbitMQ configuration (RABBITMQ_HOST, RABBITMQ_USERNAME, RABBITMQ_PASSWORD) is missing.");
+                    cfg.Host(new Uri(url));
                 }
-
-                cfg.Host(host, "/", h =>
+                else
                 {
-                    h.Username(user);
-                    h.Password(pass);
-                });
+                    var host = configuration["RABBITMQ_HOST"];
+                    var user = configuration["RABBITMQ_USERNAME"];
+                    var pass = configuration["RABBITMQ_PASSWORD"];
+                    var vhost = configuration["RABBITMQ_VHOST"] ?? "/";
+
+                    if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+                    {
+                        throw new InvalidOperationException("RabbitMQ configuration is missing (RABBITMQ_URL or HOST/USER/PASS).");
+                    }
+
+                    cfg.Host(host, vhost, h =>
+                    {
+                        h.Username(user);
+                        h.Password(pass);
+                    });
+                }
 
                 // ConfigureEndpoints will automatically create queues and subscribe to exchanges based on consumer names
                 cfg.ConfigureEndpoints(context);
