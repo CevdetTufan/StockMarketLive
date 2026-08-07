@@ -16,7 +16,7 @@ public static class AuthEndpoints
         {
             var result = await authService.LoginAsync(request.Username, request.Password);
             if (!result.IsSuccess) return Results.BadRequest(new { result.Error });
-            return Results.Ok(new { Token = result.Value });
+            return Results.Ok(result.Value);
         }).AddEndpointFilter<ValidationFilter<LoginRequest>>();
 
         // Authenticated Endpoint (Herkes)

@@ -36,22 +36,22 @@ This project is part of a distributed, event-driven ecosystem. It operates in ta
 *   **`StockMarket` (Private Repository) - The Publisher:** 
     A closed-source, autonomous algorithmic trading and financial analysis engine. It integrates directly with the **Alpaca Trading API** to automatically analyze and trade American **NASDAQ** stocks. 
     
-    The engine employs a variety of advanced quantitative and technical trading strategies, such as:
-    *   **AI-Driven Predictive Modeling**
-    *   **Mean Reversion & Momentum**
-    *   **Moving Average Convergence Divergence (MACD) Crossovers**
-    
-    Based on these strategies, it makes autonomous Buy/Sell/Hold decisions and publishes these real-time signals (`StockPriceAnalyzedEvent`) to a RabbitMQ message broker.
+    The engine publishes real-time events to a RabbitMQ message broker:
+    *   `StockPriceUpdatedEvent`: Live price and volatility data.
+    *   `AnalysisInfoPublishedEvent`: AI-driven Buy/Sell/Hold recommendations.
+    *   `OrderCreatedEvent`: Live order book executions.
+*   **`MockPublisher` (Included Tool):**
+    Since the real `StockMarket` engine is private, a built-in `MockPublisher` console application is provided in this repository. It simulates a live market by generating and publishing random stock prices, AI signals, and simulated orders directly to your RabbitMQ instance.
 *   **`StockMarketLive` (This Repository) - The Consumer:**
-    A real-time, user-facing web dashboard. It subscribes to the RabbitMQ exchanges via MassTransit, consumes the published AI signals, and broadcasts them securely to connected web clients via SignalR (WebSockets).
+    A real-time, user-facing web dashboard. It subscribes to the RabbitMQ exchanges via **MassTransit**, consumes the published AI signals, and broadcasts them securely to connected web clients via **SignalR** (WebSockets).
 
 ## 🚀 Technology Stack
 
 **Backend:**
-*   **.NET 10 (C# 14)**
+*   **.NET 10 (C# 13)** - Enforcing modern syntax such as Primary Constructors and Collection Expressions.
 *   **Clean Architecture** (Domain, Application, Infrastructure, Api)
 *   **Entity Framework Core** (Code-First PostgreSQL)
-*   **MassTransit & RabbitMQ** (Pub/Sub Fanout Exchange via CloudAMQP)
+*   **MassTransit & RabbitMQ** (Pub/Sub Event-Driven Architecture)
 *   **SignalR** (Real-time WebSockets)
 *   **Custom JWT Authentication & RBAC** 
 
@@ -103,25 +103,41 @@ This project strictly adheres to enterprise-level security and quality standards
    ```bash
    cd backend/StockMarketLive.Api
    dotnet user-secrets init
-   dotnet user-secrets set "ConnectionStrings:RabbitMq" "amqps://[USER]:[PASSWORD]@[SERVER].rmq.cloudamqp.com/[VHOST]"
+   dotnet user-secrets set "RABBITMQ_URL" "amqps://[USER]:[PASSWORD]@[SERVER].rmq.cloudamqp.com/[VHOST]"
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=db.[YOUR_PROJECT_ID].supabase.co;Port=5432;Database=postgres;Username=postgres;Password=[YOUR_PASSWORD];Pooling=false;SSL Mode=Require;Trust Server Certificate=true"
    dotnet user-secrets set "Jwt:Key" "[YOUR_SUPER_SECRET_JWT_KEY]"
    dotnet user-secrets set "Jwt:Issuer" "StockMarketLive"
    dotnet user-secrets set "Jwt:Audience" "StockMarketLiveUsers"
    ```
 
-### Running the Backend
-```bash
-cd backend/StockMarketLive.Api
-dotnet run
-```
+2. Configure secrets for the `MockPublisher`:
+   ```bash
+   cd ../MockPublisher
+   dotnet user-secrets init
+   dotnet user-secrets set "RABBITMQ_URL" "amqps://[USER]:[PASSWORD]@[SERVER].rmq.cloudamqp.com/[VHOST]"
+   ```
 
-### Running the Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### Running the Ecosystem
+
+1. **Run the Backend API:**
+   ```bash
+   cd backend/StockMarketLive.Api
+   dotnet run
+   ```
+
+2. **Run the MockPublisher (Data Generator):**
+   Open a new terminal window:
+   ```bash
+   cd backend/MockPublisher
+   dotnet run
+   ```
+
+3. **Run the Frontend (React):**
+   Open a new terminal window:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 
 ## 📄 License
 

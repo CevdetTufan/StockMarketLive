@@ -3,18 +3,36 @@ import type { ReactNode } from 'react';
 import * as signalR from '@microsoft/signalr';
 import { useAuth } from './AuthContext';
 
-export interface StockPriceAnalyzedEvent {
+export interface AnalysisInfoPublishedEvent {
+  analysisId: string;
+  symbol: string;
+  recommendation: string;
+  score: number;
+  publishedAt: string;
+}
+
+export interface OrderCreatedEvent {
+  orderId: string;
   symbol: string;
   price: number;
-  signal: number;
-  aiReason: string | null;
-  timestamp: string;
+  quantity: number;
+  side: string;
+  createdAt: string;
+}
+
+export interface StockPriceUpdatedEvent {
+  symbol: string;
+  currentPrice: number;
+  changeRate: number;
+  updatedAt: string;
 }
 
 interface SignalRContextType {
   connection: signalR.HubConnection | null;
-  stockEvents: Record<string, StockPriceAnalyzedEvent>;
-  signalHistory: StockPriceAnalyzedEvent[];
+  stockEvents: Record<string, AnalysisInfoPublishedEvent>;
+  signalHistory: AnalysisInfoPublishedEvent[];
+  livePrices: Record<string, StockPriceUpdatedEvent>;
+  recentOrders: OrderCreatedEvent[];
 }
 
 const SignalRContext = createContext<SignalRContextType | undefined>(undefined);
@@ -22,8 +40,10 @@ const SignalRContext = createContext<SignalRContextType | undefined>(undefined);
 export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { token } = useAuth();
   const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
-  const [stockEvents, setStockEvents] = useState<Record<string, StockPriceAnalyzedEvent>>({});
-  const [signalHistory, setSignalHistory] = useState<StockPriceAnalyzedEvent[]>([]);
+  const [stockEvents, setStockEvents] = useState<Record<string, AnalysisInfoPublishedEvent>>({});
+  const [signalHistory, setSignalHistory] = useState<AnalysisInfoPublishedEvent[]>([]);
+  const [livePrices, setLivePrices] = useState<Record<string, StockPriceUpdatedEvent>>({});
+  const [recentOrders, setRecentOrders] = useState<OrderCreatedEvent[]>([]);
 
   useEffect(() => {
     if (!token) {
@@ -43,7 +63,8 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     newConnection.start().catch(err => console.error('SignalR Connection Error: ', err));
 
-    newConnection.on('ReceiveStockUpdate', (data: StockPriceAnalyzedEvent) => {
+    newConnection.on('ReceiveStockUpdate', (data: AnalysisInfoPublishedEvent) => {
+      console.log('[SignalR] ReceiveStockUpdate:', data);
       // Update latest state per symbol
       setStockEvents(prev => ({
         ...prev,
@@ -57,6 +78,22 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
     });
 
+    newConnection.on('ReceiveStockPriceUpdated', (data: StockPriceUpdatedEvent) => {
+      console.log('[SignalR] ReceiveStockPriceUpdated:', data);
+      setLivePrices(prev => ({
+        ...prev,
+        [data.symbol]: data
+      }));
+    });
+
+    newConnection.on('ReceiveOrderCreated', (data: OrderCreatedEvent) => {
+      console.log('[SignalR] ReceiveOrderCreated:', data);
+      setRecentOrders(prev => {
+        const newOrders = [data, ...prev];
+        return newOrders.slice(0, 20); // Keep last 20 orders
+      });
+    });
+
     setConnection(newConnection);
 
     return () => {
@@ -65,7 +102,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
   }, [token]);
 
   return (
-    <SignalRContext.Provider value={{ connection, stockEvents, signalHistory }}>
+    <SignalRContext.Provider value={{ connection, stockEvents, signalHistory, livePrices, recentOrders }}>
       {children}
     </SignalRContext.Provider>
   );

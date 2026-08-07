@@ -1,6 +1,6 @@
 namespace StockMarketLive.Application.Interfaces;
 
-using StockMarketLive.Domain.Events;
+using StockMarket.Shared.Contracts.Events;
 
 /// <summary>
 /// Domain'den veya Message Broker'dan gelen canlı borsa verilerini 
@@ -9,5 +9,7 @@ using StockMarketLive.Domain.Events;
 /// </summary>
 public interface ILiveStockService
 {
-    Task BroadcastStockUpdateAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken ct);
+    Task BroadcastStockUpdateAsync(AnalysisInfoPublishedEvent stockEvent, CancellationToken ct);
+    Task BroadcastOrderCreatedAsync(OrderCreatedEvent orderEvent, CancellationToken ct);
+    Task BroadcastStockPriceUpdatedAsync(StockPriceUpdatedEvent priceEvent, CancellationToken ct);
 }

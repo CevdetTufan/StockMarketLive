@@ -1,22 +1,21 @@
+using StockMarket.Shared.Contracts.Events;
 using StockMarketLive.Application.Interfaces;
 using StockMarketLive.Domain.Entities;
-using StockMarketLive.Domain.Events;
 using StockMarketLive.Infrastructure.Persistence;
 
 namespace StockMarketLive.Infrastructure.Services;
 
-public class StockSignalService(AppDbContext context, ILiveStockService liveStockService) : IStockSignalService
+public sealed class StockSignalService(AppDbContext context, ILiveStockService liveStockService) : IStockSignalService
 {
-    public async Task ProcessSignalAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken ct = default)
+    public async Task ProcessSignalAsync(AnalysisInfoPublishedEvent stockEvent, CancellationToken ct = default)
     {
         var signal = new StockSignal
         {
             Id = Guid.NewGuid(),
             Symbol = stockEvent.Symbol,
-            Price = stockEvent.Price,
-            Signal = stockEvent.Signal,
-            AiReason = stockEvent.AiReason,
-            Timestamp = stockEvent.Timestamp
+            Recommendation = stockEvent.Recommendation,
+            Score = stockEvent.Score,
+            PublishedAt = stockEvent.PublishedAt
         };
         
         context.StockSignals.Add(signal);

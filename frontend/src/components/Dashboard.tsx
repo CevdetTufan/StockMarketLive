@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useSignalR } from '../contexts/SignalRContext';
 import { LiveSignalsFeed } from './LiveSignalsFeed';
+import { LiveOrdersFeed } from './LiveOrdersFeed';
 import { UserManagement } from './UserManagement';
 
 export const Dashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { logout, isAdmin } = useAuth();
-  const { stockEvents } = useSignalR();
+  const { stockEvents, livePrices } = useSignalR();
   const [selectedSymbol, setSelectedSymbol] = useState<string>('AAPL');
   const [activeTab, setActiveTab] = useState<'terminal' | 'users'>('terminal');
 
@@ -21,6 +22,8 @@ export const Dashboard: React.FC = () => {
   
   // Bulunan en son stock event bilgisini almak için
   const selectedStockData = stockEvents[selectedSymbol] || Object.values(stockEvents)[0] || null;
+  const activeSymbol = selectedStockData?.symbol || selectedSymbol;
+  const currentPriceData = livePrices[activeSymbol];
 
   return (
     <div className="bg-background text-on-surface font-body-base antialiased overflow-hidden selection:bg-primary/30 selection:text-primary h-screen w-full flex flex-col">
@@ -160,10 +163,13 @@ export const Dashboard: React.FC = () => {
                   <div className="p-md border-b border-white/5 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-4">
                       <div className="flex items-baseline gap-2">
-                        <h2 className="font-headline-md text-on-surface m-0 leading-none">{selectedStockData?.symbol || 'WAITING'}</h2>
+                        <h2 className="font-headline-md text-on-surface m-0 leading-none">{activeSymbol}</h2>
+                        <span className="font-data-xl text-primary font-bold text-2xl ml-2">
+                          {currentPriceData ? `$${currentPriceData.currentPrice.toFixed(2)}` : 'WAITING...'}
+                        </span>
                       </div>
                       <div className="h-4 w-px bg-white/20"></div>
-                      <div className="font-data-lg text-on-surface">${selectedStockData?.price?.toFixed(2) || '0.00'}</div>
+                      <div className="font-data-lg text-on-surface">Score: {selectedStockData?.score?.toFixed(2) || '0.00'}</div>
                     </div>
                     <div className="flex gap-2">
                       <button className="bg-surface-container-highest hover:bg-surface-bright text-on-surface font-label-sm px-3 py-1 rounded transition-colors text-[11px]">1H</button>
@@ -175,7 +181,7 @@ export const Dashboard: React.FC = () => {
                   {/* Chart Canvas (CSS Placeholder based on user HTML) */}
                   <div className="flex-1 relative p-4 flex flex-col justify-center items-center" style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)', backgroundSize: '40px 40px', backgroundPosition: 'center center' }}>
                      {!selectedStockData ? (
-                        <p className="text-on-surface-variant/50">Canlı fiyat bekleniyor...</p>
+                        <p className="text-on-surface-variant/50">Canlı analiz bekleniyor...</p>
                      ) : (
                         <>
                           {/* Fake Chart Lines for aesthetic from HTML */}
@@ -184,15 +190,18 @@ export const Dashboard: React.FC = () => {
                             <circle className="animate-pulse" cx="650" cy="50" fill="#ccbdff" r="4"></circle>
                           </svg>
                           <div className="font-display-lg text-primary text-6xl shadow-black drop-shadow-2xl opacity-50 absolute">
-                            ${selectedStockData.price.toFixed(2)}
+                            {selectedStockData.score.toFixed(2)}
                           </div>
                         </>
                      )}
                   </div>
                 </div>
 
-                {/* Live AI Signals Feed */}
-                <LiveSignalsFeed />
+                {/* Right Side Feeds (Signals & Orders) */}
+                <div className="flex-1 flex flex-col gap-gutter min-h-[400px] lg:min-h-0 overflow-hidden">
+                  <LiveSignalsFeed />
+                  <LiveOrdersFeed />
+                </div>
               </div>
             </>
           ) : (

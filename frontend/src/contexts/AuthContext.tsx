@@ -25,6 +25,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (res.ok) {
           return res.json();
         }
+        if (res.status === 401) {
+          throw new Error('UNAUTHORIZED');
+        }
         throw new Error('Yetkilendirme bilgisi alınamadı.');
       })
       .then(data => {
@@ -33,6 +36,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       .catch(err => {
         console.error(err);
         setIsAdmin(false);
+        if (err.message === 'UNAUTHORIZED') {
+          localStorage.removeItem('token');
+          setToken(null);
+        }
       });
     } else {
       setIsAdmin(false);

@@ -34,31 +34,38 @@ public static class DependencyInjection
 
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<StockPriceAnalyzedConsumer>();
+            x.AddConsumer<OrderCreatedEventConsumer>();
+            x.AddConsumer<AnalysisInfoPublishedEventConsumer>();
+            x.AddConsumer<StockPriceUpdatedEventConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                // Güvenlik Kuralı: Şifreler ve URL'ler koda yazılmaz, IConfiguration üzerinden (.env veya user-secrets) okunur.
-                var rabbitMqUrl = configuration.GetConnectionString("RabbitMq");
-                
-                if (string.IsNullOrEmpty(rabbitMqUrl))
+                var url = configuration["RABBITMQ_URL"];
+                if (!string.IsNullOrEmpty(url))
                 {
-                    throw new InvalidOperationException("RabbitMQ ConnectionString is missing in configuration or secrets.");
+                    cfg.Host(new Uri(url));
+                }
+                else
+                {
+                    var host = configuration["RABBITMQ_HOST"];
+                    var user = configuration["RABBITMQ_USERNAME"];
+                    var pass = configuration["RABBITMQ_PASSWORD"];
+                    var vhost = configuration["RABBITMQ_VHOST"] ?? "/";
+
+                    if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+                    {
+                        throw new InvalidOperationException("RabbitMQ configuration is missing (RABBITMQ_URL or HOST/USER/PASS).");
+                    }
+
+                    cfg.Host(host, vhost, h =>
+                    {
+                        h.Username(user);
+                        h.Password(pass);
+                    });
                 }
 
-                cfg.Host(new Uri(rabbitMqUrl));
-
-                // Profesyonel Exchange (Pub/Sub) Stratejisi
-                cfg.ReceiveEndpoint(AppConstants.RabbitMq.QueueName, e =>
-                {
-                    e.ConfigureConsumer<StockPriceAnalyzedConsumer>(context);
-                    
-                    // Publisher (Mevcut proje) bu exchange'e atacak, biz buradan dinleyeceğiz.
-                    e.Bind(AppConstants.RabbitMq.ExchangeName, x =>
-                    {
-                        x.ExchangeType = "fanout";
-                    });
-                });
+                // ConfigureEndpoints will automatically create queues and subscribe to exchanges based on consumer names
+                cfg.ConfigureEndpoints(context);
             });
         });
 

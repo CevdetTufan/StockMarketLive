@@ -1,8 +1,8 @@
-using StockMarketLive.Domain.Events;
+using StockMarket.Shared.Contracts.Events;
 
 namespace StockMarketLive.Application.Interfaces;
 
 public interface IStockSignalService
 {
-    Task ProcessSignalAsync(StockPriceAnalyzedEvent stockEvent, CancellationToken ct = default);
+    Task ProcessSignalAsync(AnalysisInfoPublishedEvent stockEvent, CancellationToken ct = default);
 }
