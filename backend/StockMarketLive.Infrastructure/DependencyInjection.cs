@@ -32,43 +32,60 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IStockSignalService, StockSignalService>();
 
-        services.AddMassTransit(x =>
-        {
-            x.AddConsumer<OrderCreatedEventConsumer>();
-            x.AddConsumer<AnalysisInfoPublishedEventConsumer>();
-            x.AddConsumer<StockPriceUpdatedEventConsumer>();
+		services.AddMassTransit(x =>
+		{
+			x.AddConsumer<OrderCreatedEventConsumer>();
+			x.AddConsumer<AnalysisInfoPublishedEventConsumer>();
+			x.AddConsumer<StockPriceUpdatedEventConsumer>();
 
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var url = configuration["RABBITMQ_URL"];
-                if (!string.IsNullOrEmpty(url))
-                {
-                    cfg.Host(new Uri(url));
-                }
-                else
-                {
-                    var host = configuration["RABBITMQ_HOST"];
-                    var user = configuration["RABBITMQ_USERNAME"];
-                    var pass = configuration["RABBITMQ_PASSWORD"];
-                    var vhost = configuration["RABBITMQ_VHOST"] ?? "/";
+			x.UsingRabbitMq((context, cfg) =>
+			{
+				var url = configuration["RABBITMQ_URL"];
+				if (!string.IsNullOrEmpty(url))
+				{
+					cfg.Host(new Uri(url));
+				}
+				else
+				{
+					var host = configuration["RABBITMQ_HOST"];
+					var user = configuration["RABBITMQ_USERNAME"];
+					var pass = configuration["RABBITMQ_PASSWORD"];
+					var vhost = configuration["RABBITMQ_VHOST"] ?? "/";
 
-                    if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-                    {
-                        throw new InvalidOperationException("RabbitMQ configuration is missing (RABBITMQ_URL or HOST/USER/PASS).");
-                    }
+					if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+					{
+						throw new InvalidOperationException("RabbitMQ configuration is missing (RABBITMQ_URL or HOST/USER/PASS).");
+					}
 
-                    cfg.Host(host, vhost, h =>
-                    {
-                        h.Username(user);
-                        h.Password(pass);
-                    });
-                }
+					cfg.Host(host, vhost, h =>
+					{
+						h.Username(user);
+						h.Password(pass);
+					});
+				}
 
-                // ConfigureEndpoints will automatically create queues and subscribe to exchanges based on consumer names
-                cfg.ConfigureEndpoints(context);
-            });
-        });
 
-        return services;
+				cfg.ReceiveEndpoint("order-created-event", e =>
+				{
+					e.Durable = false;
+					e.ConfigureConsumer<OrderCreatedEventConsumer>(context);
+				});
+
+				cfg.ReceiveEndpoint("analysis-info-published-event", e =>
+				{
+					e.Durable = false;
+					e.ConfigureConsumer<AnalysisInfoPublishedEventConsumer>(context);
+				});
+
+				cfg.ReceiveEndpoint("stock-price-updated-event", e =>
+				{
+					e.Durable = false; 
+
+					e.ConfigureConsumer<StockPriceUpdatedEventConsumer>(context);
+				});
+			});
+		});
+
+		return services;
     }
 }
